@@ -16,9 +16,8 @@ export default async function handler(req, res) {
 	}
 
 	try {
-		// 쿼리 파라미터 추출 (종로1가 테스트용)
-		const { startIdx = 1, endIdx = 1000 } = req.query;
-		const dong = '종로1가'; // 테스트용 하드코딩
+		// 쿼리 파라미터 추출
+		const { startIdx = 1, endIdx = 1000, dong } = req.query;
 
 		// 요청 크기 제한 (서버리스 함수 안정성을 위해)
 		const maxRequestSize = 1000; // 1000건으로 더욱 보수적으로 제한
@@ -97,13 +96,7 @@ export default async function handler(req, res) {
 						status === '운영중' ||
 						status === '영업/정상');
 
-				// 동 필터링 (동이 지정된 경우)
-				if (dong && isActive) {
-					const address =
-						restaurant.소재지전체주소 || restaurant.도로명전체주소 || '';
-					return address.includes(dong);
-				}
-
+				// 동 필터링 임시 해제 (전체 데이터에서 "초식곳간" 찾기 위해)
 				return isActive;
 			});
 
