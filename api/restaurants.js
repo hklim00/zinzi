@@ -17,7 +17,7 @@ export default async function handler(req, res) {
 
 	try {
 		// 쿼리 파라미터 추출
-		const { startIdx = 1, endIdx = 1000 } = req.query;
+		const { startIdx = 1, endIdx = 1000, dong } = req.query;
 
 		// 요청 크기 제한 (서버리스 함수 안정성을 위해)
 		const maxRequestSize = 3000;
@@ -89,13 +89,19 @@ export default async function handler(req, res) {
 			// 서버에서 미리 영업중인 업소만 필터링
 			.filter((restaurant) => {
 				const status = restaurant.영업상태명;
-				return (
-					status &&
+				const isActive = status &&
 					(status.includes('영업') ||
 						status.includes('정상') ||
 						status === '운영중' ||
-						status === '영업/정상')
-				);
+						status === '영업/정상');
+				
+				// 동 필터링 (동이 지정된 경우)
+				if (dong && isActive) {
+					const address = restaurant.소재지전체주소 || restaurant.도로명전체주소 || '';
+					return address.includes(dong);
+				}
+				
+				return isActive;
 			});
 
 		console.log(
