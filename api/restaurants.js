@@ -16,9 +16,9 @@ export default async function handler(req, res) {
 	}
 
 	try {
-		// 쿼리 파라미터 추출 (종로1가 지번주소 검색)
+		// 쿼리 파라미터 추출 (임시로 전체 검색)
 		const { startIdx = 1, endIdx = 1000 } = req.query;
-		const dong = '종로1가'; // 지번주소에서 종로1가만 검색
+		const dong = null; // 임시로 동 필터링 해제 (디버깅용)
 
 		// 요청 크기 제한 (서버리스 함수 안정성을 위해)
 		const maxRequestSize = 1000; // 1000건으로 더욱 보수적으로 제한
@@ -127,8 +127,12 @@ export default async function handler(req, res) {
 			return isActive;
 		});
 
-		console.log(`✅ 최종 필터링된 업소: ${transformedData.length}건 (영업중 + 종로1가)`);
-		const finalChosik = transformedData.find((r) => r.업소명?.includes('초식곳간'));
+		console.log(
+			`✅ 최종 필터링된 업소: ${transformedData.length}건 (영업중 + 종로1가)`
+		);
+		const finalChosik = transformedData.find((r) =>
+			r.업소명?.includes('초식곳간')
+		);
 		if (finalChosik) {
 			console.log(`🎯 최종 결과에 초식곳간 포함됨!`);
 		} else {
