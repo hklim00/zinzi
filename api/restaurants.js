@@ -16,8 +16,9 @@ export default async function handler(req, res) {
 	}
 
 	try {
-		// 쿼리 파라미터 추출
-		const { startIdx = 1, endIdx = 1000, dong } = req.query;
+		// 쿼리 파라미터 추출 (종로1가 지번주소 검색)
+		const { startIdx = 1, endIdx = 1000 } = req.query;
+		const dong = '종로1가'; // 지번주소에서 종로1가만 검색
 
 		// 요청 크기 제한 (서버리스 함수 안정성을 위해)
 		const maxRequestSize = 1000; // 1000건으로 더욱 보수적으로 제한
@@ -96,7 +97,12 @@ export default async function handler(req, res) {
 						status === '운영중' ||
 						status === '영업/정상');
 
-				// 동 필터링 임시 해제 (전체 데이터에서 "초식곳간" 찾기 위해)
+				// 동 필터링 (지번주소에서만 확인)
+				if (dong && isActive) {
+					const jibunAddress = restaurant.소재지전체주소 || '';
+					return jibunAddress.includes(dong);
+				}
+				
 				return isActive;
 			});
 
