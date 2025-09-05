@@ -16,12 +16,12 @@ export default async function handler(req, res) {
 	}
 
 	try {
-		// 쿼리 파라미터 추출 (임시로 전체 검색)
-		const { startIdx = 1, endIdx = 3000 } = req.query;
-		const dong = null; // 임시로 동 필터링 해제 (디버깅용)
+		// 쿼리 파라미터 추출 (종로1가 필터링 적용)
+		const { startIdx = 1, endIdx = 1000 } = req.query;
+		const dong = '종로1가'; // 종로1가로 다시 필터링
 
-		// 요청 크기 제한 (초식곳간 찾기 위해 확대)
-		const maxRequestSize = 3000; // 3000건으로 확대 (초식곳간 디버깅용)
+		// 요청 크기 제한 (초식곳간 찾기 위해 대폭 확대)
+		const maxRequestSize = 10000; // 10000건으로 대폭 확대
 		const requestSize = parseInt(endIdx) - parseInt(startIdx) + 1;
 
 		if (requestSize > maxRequestSize) {
@@ -108,7 +108,7 @@ export default async function handler(req, res) {
 			console.log(`❌ 초식곳간 미발견 (전체 ${mappedData.length}건 중)`);
 		}
 
-		// 서버에서 미리 영업중인 업소만 필터링
+		// 영업상태 필터링 다시 적용
 		const transformedData = mappedData.filter((restaurant) => {
 			const status = restaurant.영업상태명;
 			const isActive =
