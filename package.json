@@ -1,0 +1,14 @@
+{
+  "name": "public-data-proxy",
+  "version": "1.0.0",
+  "description": "공공데이터포털 API 프록시 서버",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "type": "module"
+}
