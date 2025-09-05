@@ -16,13 +16,14 @@ export default async function handler(req, res) {
 	}
 
 	try {
-		// 쿼리 파라미터 추출
-		const { startIdx = 1, endIdx = 1000, dong } = req.query;
+		// 쿼리 파라미터 추출 (종로1가 테스트용)
+		const { startIdx = 1, endIdx = 1000 } = req.query;
+		const dong = '종로1가'; // 테스트용 하드코딩
 
 		// 요청 크기 제한 (서버리스 함수 안정성을 위해)
-		const maxRequestSize = 3000;
+		const maxRequestSize = 1000; // 1000건으로 더욱 보수적으로 제한
 		const requestSize = parseInt(endIdx) - parseInt(startIdx) + 1;
-		
+
 		if (requestSize > maxRequestSize) {
 			return res.status(400).json({
 				success: false,
@@ -40,14 +41,14 @@ export default async function handler(req, res) {
 		// 공공데이터포털 API 호출
 		console.log(`요청 크기: ${requestSize}건 (${startIdx}-${endIdx})`);
 		const startTime = Date.now();
-		
+
 		const response = await fetch(url, {
 			timeout: 25000, // 25초로 증가
 			headers: {
 				'User-Agent': 'Restaurant-Finder/1.0',
 			},
 		});
-		
+
 		const fetchTime = Date.now() - startTime;
 		console.log(`API 응답 시간: ${fetchTime}ms, 상태: ${response.status}`);
 
@@ -89,18 +90,20 @@ export default async function handler(req, res) {
 			// 서버에서 미리 영업중인 업소만 필터링
 			.filter((restaurant) => {
 				const status = restaurant.영업상태명;
-				const isActive = status &&
+				const isActive =
+					status &&
 					(status.includes('영업') ||
 						status.includes('정상') ||
 						status === '운영중' ||
 						status === '영업/정상');
-				
+
 				// 동 필터링 (동이 지정된 경우)
 				if (dong && isActive) {
-					const address = restaurant.소재지전체주소 || restaurant.도로명전체주소 || '';
+					const address =
+						restaurant.소재지전체주소 || restaurant.도로명전체주소 || '';
 					return address.includes(dong);
 				}
-				
+
 				return isActive;
 			});
 

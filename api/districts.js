@@ -21,19 +21,21 @@ export default async function handler(req, res) {
 
 		console.log('동 목록 추출을 위한 API 호출');
 		const startTime = Date.now();
-		
+
 		const response = await fetch(url, {
 			timeout: 25000,
 			headers: {
 				'User-Agent': 'Restaurant-Finder/1.0',
 			},
 		});
-		
+
 		const fetchTime = Date.now() - startTime;
 		console.log(`API 응답 시간: ${fetchTime}ms, 상태: ${response.status}`);
 
 		if (!response.ok) {
-			throw new Error(`API 호출 실패: ${response.status} ${response.statusText}`);
+			throw new Error(
+				`API 호출 실패: ${response.status} ${response.statusText}`
+			);
 		}
 
 		const xmlData = await response.text();
@@ -48,14 +50,15 @@ export default async function handler(req, res) {
 
 		// 동 목록 추출
 		const dongSet = new Set();
-		restaurants.forEach(restaurant => {
-			const address = restaurant.SITEWHLADDR?.[0] || restaurant.RDNWHLADDR?.[0] || '';
-			
+		restaurants.forEach((restaurant) => {
+			const address =
+				restaurant.SITEWHLADDR?.[0] || restaurant.RDNWHLADDR?.[0] || '';
+
 			// 주소에서 동 이름 추출 (서울특별시 종로구 다음 부분)
 			const match = address.match(/서울특별시\s+종로구\s+([^\s]+)/);
 			if (match && match[1]) {
 				let dongName = match[1];
-				
+
 				// 숫자가 포함된 동 처리 (예: 관훈동, 삼청동, 종로1가동 등)
 				if (dongName.includes('동') || dongName.includes('가')) {
 					dongSet.add(dongName);
@@ -65,7 +68,7 @@ export default async function handler(req, res) {
 
 		// 동 목록을 배열로 변환하고 정렬
 		const dongList = Array.from(dongSet)
-			.filter(dong => dong.length > 1) // 너무 짧은 것들 제외
+			.filter((dong) => dong.length > 1) // 너무 짧은 것들 제외
 			.sort();
 
 		console.log(`추출된 동 목록: ${dongList.length}개`);
