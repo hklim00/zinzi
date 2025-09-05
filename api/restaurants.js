@@ -70,41 +70,70 @@ export default async function handler(req, res) {
 		const restaurants = jsonData.LOCALDATA_072404_JN.row;
 
 		// XML 데이터를 프론트엔드에서 사용하는 형식으로 변환
-		const transformedData = restaurants
-			.map((restaurant) => ({
-				id: restaurant.MGTNO?.[0] || '',
-				업소명: restaurant.BPLCNM?.[0] || '',
-				업태구분명: restaurant.UPTAENM?.[0] || '',
-				소재지전체주소: restaurant.SITEWHLADDR?.[0] || '',
-				도로명전체주소: restaurant.RDNWHLADDR?.[0] || '',
-				소재지전화: restaurant.SITETEL?.[0] || '',
-				영업상태명: restaurant.TRDSTATENM?.[0] || '',
-				폐업일자: restaurant.DCBYMD?.[0] || '',
-				허가일자: restaurant.APVPERMYMD?.[0] || '',
-				좌표정보X: restaurant.X?.[0] || '',
-				좌표정보Y: restaurant.Y?.[0] || '',
-				시설총규모: restaurant.FACILTOTSCP?.[0] || '',
-				소재지우편번호: restaurant.SITEPOSTNO?.[0] || '',
-				도로명우편번호: restaurant.RDNPOSTNO?.[0] || '',
-			}))
-			// 서버에서 미리 영업중인 업소만 필터링
-			.filter((restaurant) => {
-				const status = restaurant.영업상태명;
-				const isActive =
-					status &&
-					(status.includes('영업') ||
-						status.includes('정상') ||
-						status === '운영중' ||
-						status === '영업/정상');
+		const mappedData = restaurants.map((restaurant) => ({
+			id: restaurant.MGTNO?.[0] || '',
+			업소명: restaurant.BPLCNM?.[0] || '',
+			업태구분명: restaurant.UPTAENM?.[0] || '',
+			소재지전체주소: restaurant.SITEWHLADDR?.[0] || '',
+			도로명전체주소: restaurant.RDNWHLADDR?.[0] || '',
+			소재지전화: restaurant.SITETEL?.[0] || '',
+			영업상태명: restaurant.TRDSTATENM?.[0] || '',
+			폐업일자: restaurant.DCBYMD?.[0] || '',
+			허가일자: restaurant.APVPERMYMD?.[0] || '',
+			좌표정보X: restaurant.X?.[0] || '',
+			좌표정보Y: restaurant.Y?.[0] || '',
+			시설총규모: restaurant.FACILTOTSCP?.[0] || '',
+			소재지우편번호: restaurant.SITEPOSTNO?.[0] || '',
+			도로명우편번호: restaurant.RDNPOSTNO?.[0] || '',
+		}));
 
-				// 동 필터링 (지번주소에서만 확인)
-				if (dong && isActive) {
-					const jibunAddress = restaurant.소재지전체주소 || '';
-					return jibunAddress.includes(dong);
-				}
-				
-				return isActive;
-			});
+		console.log(`🏢 총 가져온 업소 수: ${mappedData.length}건`);
+
+		// 종로1가 업소 찾기 (영업상태 무관)
+		const jongro1gaAll = mappedData.filter((restaurant) => {
+			const jibunAddress = restaurant.소재지전체주소 || '';
+			return jibunAddress.includes(dong);
+		});
+		console.log(`📍 종로1가 전체 업소: ${jongro1gaAll.length}건`);
+
+		// 초식곳간 찾기
+		const chosikTarget = mappedData.find((r) => r.업소명?.includes('초식곳간'));
+		if (chosikTarget) {
+			console.log(`🎯 초식곳간 발견!`);
+			console.log(`   - 업소명: ${chosikTarget.업소명}`);
+			console.log(`   - 영업상태: ${chosikTarget.영업상태명}`);
+			console.log(`   - 지번주소: ${chosikTarget.소재지전체주소}`);
+			console.log(`   - 도로명주소: ${chosikTarget.도로명전체주소}`);
+		} else {
+			console.log(`❌ 초식곳간 미발견 (전체 ${mappedData.length}건 중)`);
+		}
+
+		// 서버에서 미리 영업중인 업소만 필터링
+		const transformedData = mappedData.filter((restaurant) => {
+			const status = restaurant.영업상태명;
+			const isActive =
+				status &&
+				(status.includes('영업') ||
+					status.includes('정상') ||
+					status === '운영중' ||
+					status === '영업/정상');
+
+			// 동 필터링 (지번주소에서만 확인)
+			if (dong && isActive) {
+				const jibunAddress = restaurant.소재지전체주소 || '';
+				return jibunAddress.includes(dong);
+			}
+
+			return isActive;
+		});
+
+		console.log(`✅ 최종 필터링된 업소: ${transformedData.length}건 (영업중 + 종로1가)`);
+		const finalChosik = transformedData.find((r) => r.업소명?.includes('초식곳간'));
+		if (finalChosik) {
+			console.log(`🎯 최종 결과에 초식곳간 포함됨!`);
+		} else {
+			console.log(`❌ 최종 결과에 초식곳간 없음`);
+		}
 
 		console.log(
 			`원본: ${restaurants.length}건 → 영업중: ${transformedData.length}건`
